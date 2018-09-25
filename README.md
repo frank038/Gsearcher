@@ -11,4 +11,4 @@ added. At the moment, the following plugins are present: etext.py for
 text files, epdf.py (requires pdftotext) for pdf files, eodt.py (requires odt2txt) 
 for Libreoffice doc files, edoc.py (requires catdoc) for MS doc files, 
 edocx.py (requires docx2txt) for MS docx files.
-The program can also handle multiple database
+The program can also handle multiple databases.
