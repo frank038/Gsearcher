@@ -13,3 +13,4 @@ for Libreoffice doc files, edoc.py (requires catdoc) for MS doc files,
 edocx.py (requires docx2txt) for MS docx files.
 The program can also handle multiple databases.
 The logs help user to check which files have been indexed, which not and the reason.
+The searched words are set in bold.
