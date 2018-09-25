@@ -12,3 +12,4 @@ text files, epdf.py (requires pdftotext) for pdf files, eodt.py (requires odt2tx
 for Libreoffice doc files, edoc.py (requires catdoc) for MS doc files, 
 edocx.py (requires docx2txt) for MS docx files.
 The program can also handle multiple databases.
+The logs help user to check which files have been indexed, which not and the reason.
