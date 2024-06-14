@@ -13,7 +13,7 @@ and edoc.py for MS doc files and edocx.py for MS docx files (all of them require
 
 The cfg.py is the config file for the program.
 
-Note about the pdf files: only searchble pdf files can be indexed, so encrypter and not searcheble ones will be skipped, or will be stored malformed.
+About the indexers: only searchable pdf files can be indexed, so encrypter and not searcheble ones will be skipped, or will be stored malformed; the text extracted by the extractors from the files depends on the ability of them to extract it.
 
 The program can also handle multiple databases.
 
