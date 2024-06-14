@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# by frank38
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, Gio
@@ -99,24 +99,24 @@ class MainWindow(Gtk.Window):
         self.hbox1.set_vexpand(False)
         self.grid.attach(self.hbox1, 0,1,1,1)
         # and buttons
-        self.button_launch = Gtk.Button(l.Launch)
+        self.button_launch = Gtk.Button(label=l.Launch)
         self.hbox1.pack_start(self.button_launch, True, True, 0)
         self.button_launch.connect("clicked", self.on_launch)
         separator = Gtk.Separator()
         separator.set_orientation(Gtk.Orientation.HORIZONTAL)
         self.hbox1.pack_start(separator, False, False, 1)
-        self.button_select = Gtk.Button(l.Select)
+        self.button_select = Gtk.Button(label=l.Select)
         self.hbox1.pack_start(self.button_select, True, True, 0)
-        self.button_add = Gtk.Button(l.Add)
+        self.button_add = Gtk.Button(label=l.Add)
         self.button_add.connect("clicked", self.on_add)
         self.hbox1.pack_start(self.button_add, True, True, 0)
-        self.button_delete = Gtk.Button(l.Delete)
+        self.button_delete = Gtk.Button(label=l.Delete)
         #self.button_delete.connect("clicked", self.on_delete)
         self.hbox1.pack_start(self.button_delete, True, True, 0)
         separator = Gtk.Separator()
         separator.set_orientation(Gtk.Orientation.HORIZONTAL)
         self.hbox1.pack_start(separator, False, False, 1)
-        self.button_quit = Gtk.Button(l.Quit)
+        self.button_quit = Gtk.Button(label=l.Quit)
         self.button_quit.connect("clicked", Gtk.main_quit)
         self.hbox1.pack_start(self.button_quit, True, True, 0)
         # iconview
@@ -164,10 +164,10 @@ class MainWindow(Gtk.Window):
         # messagebox
         mmessage = l.ChooseMessage1
         messagedialog1 = Gtk.MessageDialog(parent=self,
-                                              flags=Gtk.DialogFlags.MODAL,
-                                              type=Gtk.MessageType.WARNING,
+                                              modal=True,
+                                              message_type=Gtk.MessageType.WARNING,
                                               buttons=Gtk.ButtonsType.OK_CANCEL,
-                                              message_format=mmessage)
+                                              text=mmessage)
         messagedialog1.connect("response", self.dialog_response1)
         messagedialog1.show()
     
@@ -191,10 +191,10 @@ class MainWindow(Gtk.Window):
     # messagebox
     def msgbox(self, widget, ddata):
         messagedialog1 = Gtk.MessageDialog(parent=self,
-                                              flags=Gtk.DialogFlags.MODAL,
-                                              type=Gtk.MessageType.WARNING,
+                                              modal=True,
+                                              message_type=Gtk.MessageType.WARNING,
                                               buttons=Gtk.ButtonsType.OK_CANCEL,
-                                              message_format=ddata)
+                                              text=ddata)
         messagedialog1.connect("response", self.dialog_response1)
         messagedialog1.show()
     
@@ -210,14 +210,14 @@ class MainWindow(Gtk.Window):
     # add a new database
     def on_add(self, widget):
         ttitle=""
-        Gtk.Dialog(parent=self, title=ttitle, flags=Gtk.DialogFlags.MODAL,
-                            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                            Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        # Gtk.Dialog(parent=self, title=ttitle, flags=Gtk.DialogFlags.MODAL,
+                            # buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                            # Gtk.STOCK_OK, Gtk.ResponseType.OK))
         appd = Gtk.Dialog()
         appd.set_default_response(Gtk.ResponseType.OK)
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         box = appd.get_content_area()
-        label = Gtk.Label(l.ChooseMessage2)
+        label = Gtk.Label(label=l.ChooseMessage2)
         vbox.pack_start(label, False, True, 0)
         entry = Gtk.Entry()
         vbox.pack_start(entry, False, True, 0)
@@ -301,10 +301,10 @@ class MainWindow(Gtk.Window):
             # simple message box to inform the change has been made
             mmessage = l.ChooseMessage3
             messagedialog2 = Gtk.MessageDialog(parent=self,
-                                                  flags=Gtk.DialogFlags.MODAL,
-                                                  type=Gtk.MessageType.WARNING,
+                                                  modal=True,
+                                                  message_type=Gtk.MessageType.WARNING,
                                                   buttons=Gtk.ButtonsType.OK,
-                                                  message_format=mmessage)
+                                                  text=mmessage)
             messagedialog2.connect("response", self.dialog_response2)
             messagedialog2.show()
         

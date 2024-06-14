@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-# by frank38
-Number_version = "1.0.2"
+Number_version = "1.0.3"
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, Gio, Pango
 from gi.repository.GdkPixbuf import Pixbuf
-import os
+import os,stat
 import sys
 import glob
 import importlib
@@ -23,14 +22,37 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
+from cfg import *
+
 # use markup
 USE_MARKUP = True
-# width of the main window
-WWIDTH = 1100
-# height of the manin window
-EEIGHT = 800
-# name of config file
-CONFIG_XML = "./DATABASE/config.xml"
+# # width of the main window
+# WWIDTH = 1100
+# # height of the manin window
+# EEIGHT = 800
+# # name of config file
+# CONFIG_XML = "./DATABASE/config.xml"
+
+####### starting check
+# check executable permissions
+for ffile in ["Gsearcher_config.py","Gsearcher_choose_db.py","indexerdb.py"]:
+    if not os.access(ffile,os.X_OK):
+        try:
+            os.chmod(ffile, 0o755)
+        except Exception as E:
+            print("ERRORS:", str(E))
+            sys.exit()
+
+# check for system folders
+for ffile in ["DATABASE", "LOG"]:
+    if not os.path.exists("DATABASE"):
+        try:
+            os.makedirs(os.path.join(os.getcwd(),"DATABASE"))
+        except Exception as E:
+            print("ERRORS:", str(E))
+            sys.exit()
+#######
+
 # program directory
 main_dir = os.getcwd()
 # home directory
@@ -195,26 +217,29 @@ for ep in eePlugins:
 # if extractor command is not found, the plugin is disabled
 la1 = 0
 for ccommand in extractor_command:
-    aaa = shutil.which(ccommand)
-    asde = extractor_command.index(ccommand)
-    if (aaa == None) and (extractor_filename[asde] not in ePlugins2) :
+    if ccommand == "TRUE":
+        _comm = "INTERNAL"
+    else:
+        _comm = shutil.which(ccommand)
+    _idx = extractor_command.index(ccommand)
+    if (_comm == None) and (extractor_filename[_idx] not in ePlugins2) :
         # move the plugin away
         os.chdir("extractors")
-        os.rename(extractor_filename[asde],"disabled/"+extractor_filename[asde])
+        os.rename(extractor_filename[_idx],"disabled/"+extractor_filename[_idx])
         os.chdir(main_dir)
         # write error in the log file
         flog = open(main_dir+"/LOG/log","a")
-        flog.write("{} The command {} cannot be found. The plugin {} has been disabled. The {} files cannot be indexed.\n".format(ddatettime,ccommand, extractor_filename[asde], extractor_identify[asde]))
+        flog.write("{} The command {} cannot be found. The plugin {} has been disabled. The {} files cannot be indexed.\n".format(ddatettime,ccommand, extractor_filename[_idx], extractor_identify[_idx]))
         flog.close()
     la1 += 1
 
 # combo_search initialization: And
 combo_box_name = l.And
 
-# limits the number of opened tabs
-LIMIT_TAB = 10
-# for discharging useless tabs
-LIMIT_OFFSET = 250
+# # limits the number of opened tabs
+# LIMIT_TAB = 10
+# # for discharging useless tabs
+# LIMIT_OFFSET = 250
 # reads what file manager to use
 file_manager = 'SYSTEM'
 try:
@@ -249,7 +274,7 @@ class MainWindow(Gtk.Window):
         self.menubar = Gtk.MenuBar()
         ### add menuitems
         # item1
-        menuitem = Gtk.MenuItem(l.item1, False)
+        menuitem = Gtk.MenuItem(label=l.item1, right_justified=False)
         self.menubar.append(menuitem)
         # add submenu in item1
         menu = Gtk.Menu()
@@ -263,7 +288,7 @@ class MainWindow(Gtk.Window):
         menuitem.connect("activate", Gtk.main_quit)
         menu.append(menuitem)
         # item2
-        menuitem = Gtk.MenuItem(l.item2, False)
+        menuitem = Gtk.MenuItem(label=l.item2, right_justified=False)
         self.menubar.append(menuitem)
         # add submenu in item2
         menu = Gtk.Menu()
@@ -280,7 +305,7 @@ class MainWindow(Gtk.Window):
         menuitem.connect("activate", self.er_database)
         menu.append(menuitem)
         # item3
-        menuitem = Gtk.MenuItem(l.item3, False)
+        menuitem = Gtk.MenuItem(label=l.item3, right_justified=False)
         self.menubar.append(menuitem)
         ### added three menuitem
         # add submenu in item3
@@ -314,7 +339,7 @@ class MainWindow(Gtk.Window):
         self.stext1 = ""
         self.hbox_search.pack_start(self.entry_search, True, True, 1)
         # button for search - connected to entry_search
-        self.button_search = Gtk.Button(l.Search)
+        self.button_search = Gtk.Button(label=l.Search)
         self.hbox_search.pack_start(self.button_search, False, False, 1)
         # add separator
         separator = Gtk.Separator()
@@ -322,14 +347,14 @@ class MainWindow(Gtk.Window):
         self.hbox_search.pack_start(separator, False, False, 1)
         # button for delete from database file
         #self.button_delete = Gtk.Button()
-        #self.button_delete.set_label(l.Delete)
+        #self.button_delete.set_label(label=l.Delete)
         #self.hbox_search.pack_start(self.button_delete, False, False, 1)
         # add separator
         separator = Gtk.Separator()
         separator.set_orientation(Gtk.Orientation.HORIZONTAL)
         self.hbox_search.pack_start(separator, False, False, 1)
         # button - opens the directory of choosen file
-        self.button_open_entry = Gtk.Button(l.Open)
+        self.button_open_entry = Gtk.Button(label=l.Open)
         self.hbox_search.pack_start(self.button_open_entry, False, False, 1)
         # and then attach hbox_search to grid
         self.grid.attach(self.hbox_search, 0, 1, 1, 1)
@@ -380,7 +405,7 @@ class MainWindow(Gtk.Window):
         self.label1 = Gtk.Label()
         self.label1.set_text("   \n   \n   \n   ")
         self.page1.add(self.label1)
-        self.notebook.append_page(self.page1, Gtk.Label(l.Abstract))
+        self.notebook.append_page(self.page1, Gtk.Label(label=l.Abstract))
         # button_search function
         if is_database:
             self.button_search.connect("clicked", self.on_button_search)
@@ -398,10 +423,10 @@ class MainWindow(Gtk.Window):
     # dialog to ask confirmation to empty the current database
     def er_database(self, widget):
         messagedialoge = Gtk.MessageDialog(parent=self,
-                                          flags=Gtk.DialogFlags.MODAL,
-                                          type=Gtk.MessageType.WARNING,
+                                          modal=True,
+                                          message_type=Gtk.MessageType.WARNING,
                                           buttons=Gtk.ButtonsType.OK_CANCEL,
-                                          message_format=l.IndexerMessage9)
+                                          text=l.IndexerMessage9)
         messagedialoge.connect("response", self.dialog_responsee)
         messagedialoge.show()
     
@@ -418,10 +443,10 @@ class MainWindow(Gtk.Window):
     # dialog to ask confirmation to delete from database the selected file
     def on_delete_item(self, widget):
         messagedialogd = Gtk.MessageDialog(parent=self,
-                                          flags=Gtk.DialogFlags.MODAL,
-                                          type=Gtk.MessageType.WARNING,
+                                          modal=True,
+                                          message_type=Gtk.MessageType.WARNING,
                                           buttons=Gtk.ButtonsType.OK_CANCEL,
-                                          message_format=l.IndexerMessage8)
+                                          text=l.IndexerMessage8)
         messagedialogd.connect("response", self.dialog_responsed)
         messagedialogd.show()
     
@@ -575,7 +600,7 @@ class MainWindow(Gtk.Window):
                     if int(listb[listb.index(kk)][kk.index(kkk)][2]) < 197:
                         third_element = 0
                     else:
-                        third_element = listb[listb.index(kk)][kk.index(kkk)][2]
+                        third_element = int(listb[listb.index(kk)][kk.index(kkk)][2])
                     if third_element < 393:
                         cur.execute("""select substr(content,?,392) from tabella where name=(?) and dir=(?)""", (third_element, namefile, pathfile))
                     elif third_element < 588:
@@ -619,7 +644,7 @@ class MainWindow(Gtk.Window):
                         label.set_text(aaaaa)
                     #
                     page.add(label)
-                    self.notebook.append_page(page, Gtk.Label(l.Abstract))
+                    self.notebook.append_page(page, Gtk.Label(label=l.Abstract))
                     page.show()
                     label.show()
                 
@@ -638,10 +663,11 @@ class MainWindow(Gtk.Window):
                     scrolledwindow.add(labelm)
                     labelm.set_text("\n"+lmeta_string)
                     labelm.modify_font(Pango.FontDescription('Mono'))
+                    #
                     page = Gtk.Box()
                     page.set_border_width(10)
                     page.add(scrolledwindow)
-                    self.notebook.prepend_page(page, Gtk.Label(l.Metadata))
+                    self.notebook.prepend_page(page, Gtk.Label(label=l.Metadata))
                     labelm.show()
                     scrolledwindow.show()
                     page.show()
@@ -653,7 +679,7 @@ class MainWindow(Gtk.Window):
                     page = Gtk.Box()
                     page.set_border_width(10)
                     page.add(labeldg)
-                    self.notebook.append_page(page, Gtk.Label(l.Notice))
+                    self.notebook.append_page(page, Gtk.Label(label=l.Notice))
                     page.show()
                     labeldg.show()
                 # adds tab for TAG1
@@ -663,7 +689,7 @@ class MainWindow(Gtk.Window):
                     page = Gtk.Box()
                     page.set_border_width(10)
                     page.add(labelt)
-                    self.notebook.append_page(page, Gtk.Label(l.Tag1))
+                    self.notebook.append_page(page, Gtk.Label(label=l.Tag1))
                     labelt.show()
                     page.show()
         
@@ -690,7 +716,7 @@ class MainWindow(Gtk.Window):
             page = Gtk.Box()
             page.set_border_width(10)
             page.add(scrolledwindow)
-            self.notebook.prepend_page(page, Gtk.Label(l.Metadata))
+            self.notebook.prepend_page(page, Gtk.Label(label=l.Metadata))
             labelm.show()
             scrolledwindow.show()
             page.show()
@@ -701,7 +727,7 @@ class MainWindow(Gtk.Window):
                 page = Gtk.Box()
                 page.set_border_width(10)
                 page.add(labelt)
-                self.notebook.append_page(page, Gtk.Label(l.Tag1))
+                self.notebook.append_page(page, Gtk.Label(label=l.Tag1))
                 labelt.show()
                 page.show()
             # adds one tab for content
@@ -714,7 +740,7 @@ class MainWindow(Gtk.Window):
             label = Gtk.Label()
             label.set_text("\n"+aaaaal)
             page.add(label)
-            self.notebook.append_page(page, Gtk.Label(l.Abstract))
+            self.notebook.append_page(page, Gtk.Label(label=l.Abstract))
             label.show()
             page.show()
             
@@ -727,9 +753,9 @@ class MainWindow(Gtk.Window):
             self.notebook.remove_page(0)
         page = Gtk.Box()
         page.set_border_width(10)
-        label = Gtk.Label("  \n  \n  \n  ")
+        label = Gtk.Label(label="  \n  \n  \n  ")
         page.add(label)
-        self.notebook.append_page(page, Gtk.Label(l.Abstract))
+        self.notebook.append_page(page, Gtk.Label(label=l.Abstract))
         page.show()
         label.show()
         self.stext1 = self.entry_search.get_text().lower()
@@ -812,10 +838,10 @@ class MainWindow(Gtk.Window):
         message1 = message0 or (l.IndexerMessage2+str(llist[0])+"\n"+l.IndexerMessage3+str(llist[1])+"\n"+l.IndexerMessage4+str(llist[2])+"\n"+l.IndexerMessage7+str(llist[3])+IMsg6+IMsg10)
         
         messagedialog1 = Gtk.MessageDialog(parent=self,
-                                          flags=Gtk.DialogFlags.MODAL,
-                                          type=Gtk.MessageType.WARNING,
+                                          modal=True,
+                                          message_type=Gtk.MessageType.WARNING,
                                           buttons=Gtk.ButtonsType.OK,
-                                          message_format=message1)
+                                          text=message1)
         messagedialog1.connect("response", self.dialog_response1)
         messagedialog1.show()
     
@@ -828,10 +854,10 @@ class MainWindow(Gtk.Window):
     def start_index(self, widget):
         message3 = l.IndexerMessage5
         messagedialog3 = Gtk.MessageDialog(parent=self,
-                                          flags=Gtk.DialogFlags.MODAL,
-                                          type=Gtk.MessageType.WARNING,
+                                          modal=True,
+                                          message_type=Gtk.MessageType.WARNING,
                                           buttons=Gtk.ButtonsType.OK_CANCEL,
-                                          message_format=message3)
+                                          text=message3)
         messagedialog3.connect("response", self.dialog_response3)
         messagedialog3.show()
     
@@ -848,10 +874,10 @@ class MainWindow(Gtk.Window):
 
     def on_guide(self, widget):
         messagedialog2 = Gtk.MessageDialog(parent=self,
-                                              flags=Gtk.DialogFlags.MODAL,
-                                              type=Gtk.MessageType.WARNING,
-                                              buttons=Gtk.ButtonsType.OK,
-                                              message_format=l.Help)
+                                          modal=True,
+                                          message_type=Gtk.MessageType.WARNING,
+                                          buttons=Gtk.ButtonsType.OK,
+                                          text=l.Help)
         messagedialog2.connect("response", self.dialog_response2)
         messagedialog2.show()
     

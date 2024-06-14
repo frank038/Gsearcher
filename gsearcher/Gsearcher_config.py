@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# by frank38
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, Gio
@@ -18,7 +18,8 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 # name of config file
-CONFIG_XML = "./DATABASE/config.xml"
+# CONFIG_XML = "./DATABASE/config.xml"
+from cfg import CONFIG_XML
 # directory del programma
 main_dir = os.getcwd()
 # directory HOME
@@ -124,19 +125,19 @@ class MainWindow(Gtk.Window):
         self.notebook.set_scrollable(True)
         self.grid.attach(self.notebook, 0,0,1,1)
         # quit button
-        self.button_quit = Gtk.Button(l.Quit)
+        self.button_quit = Gtk.Button(label=l.Quit)
         self.button_quit.connect("clicked", self.on_main_quit)
         self.grid.attach(self.button_quit, 0,1,1,1)
         #
         self.page1 = Gtk.Box()
         self.page1.set_border_width(10)
-        self.notebook.append_page(self.page1, Gtk.Label(l.General))
+        self.notebook.append_page(self.page1, Gtk.Label(label=l.General))
         self.page2 = Gtk.Box()
         #self.page2.set_border_width(10)
-        self.notebook.append_page(self.page2, Gtk.Label(l.Extractors))
+        self.notebook.append_page(self.page2, Gtk.Label(label=l.Extractors))
         self.page3 = Gtk.Box()
         self.page3.set_border_width(10)
-        self.notebook.append_page(self.page3, Gtk.Label(l.tab_other))
+        self.notebook.append_page(self.page3, Gtk.Label(label=l.tab_other))
         ###### tab 1
          # vbox1 in tab1
         self.vbox1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
@@ -156,11 +157,11 @@ class MainWindow(Gtk.Window):
          # hboxb in vbox1 after scrolled window
         self.hboxb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
          # button_add in hboxb
-        self.button_add = Gtk.Button(l.Add)
+        self.button_add = Gtk.Button(label=l.Add)
         self.button_add.connect("clicked", self.add_ffolder)
         self.hboxb.pack_start(self.button_add, True, True, 0)
          # button_delete in hboxb
-        self.button_delete = Gtk.Button(l.Delete)
+        self.button_delete = Gtk.Button(label=l.Delete)
         self.button_delete.connect("clicked", self.del_ffolder)
         self.hboxb.pack_start(self.button_delete, True, True, 0)
         self.vbox1.pack_start(self.hboxb, False, False, 0)
@@ -172,72 +173,79 @@ class MainWindow(Gtk.Window):
         self.lscrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.lscrolledwindow.set_placement(Gtk.CornerType.TOP_LEFT)
         self.page2.add(self.lscrolledwindow)
-        command_fnf = "\n"
-        
-        la1 = 0
+        #
         grida = Gtk.Grid()
         grida.set_border_width(20)
-        
-        for ccommand in extractor_command:
-            aaa = shutil.which(ccommand)
-            asde = extractor_command.index(ccommand)
-            alignment1 = Gtk.Alignment()
-            alignment1.set_hexpand(True)
-            alignment1.set(0, 0, 0, 0)
+        #
+        for _idx,ccommand in enumerate(extractor_command):
+            if ccommand == "TRUE":
+                _comm = "INTERNAL"
+            else:
+                _comm = shutil.which(ccommand)
+            # # alignment1 = Gtk.Alignment()
+            # alignment1 = Gtk.Alignment.new(0, 0, 0, 0)
+            # alignment1.set_hexpand(True)
+            # # alignment1.set(0, 0, 0, 0)
             switch = Gtk.Switch()
             label = Gtk.Label(xalign=0)
-            label.set_text("Plugin {}".format(extractor_filename[asde]))
-            alignment1.add(label)
+            label.set_text("Plugin {}".format(extractor_filename[_idx]))
+            # alignment1.add(label)
             labela = Gtk.Label(xalign=0)
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-            hbox.pack_start(alignment1, False, True, 0)
+            # hbox.pack_start(alignment1, False, True, 0)
+            hbox.pack_start(label, True, True, 0)
             hbox.pack_start(switch, False, False, 0)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
             vbox.pack_start(hbox, True, True, 0)
             vbox.pack_start(labela, True, True, 0)
             separatortab2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
             vbox.pack_start(separatortab2, False, True, 10)
-            grida.attach(vbox, 0,la1,1,1)
-            pplugdis = (extractor_filename[asde] in ePlugins2)
-            if (pplugdis == True) and (aaa == None):
-                labela.set_text("The command <b>{}</b> cannot be found.\nThe <b>{}</b> files cannot be indexed.\n(Need restarting)\n\n".format(ccommand, extractor_identify[asde]))
+            grida.attach(vbox, 0,_idx,1,1)
+            pplugdis = (extractor_filename[_idx] in ePlugins2)
+            if (pplugdis == True) and (_comm == None):
+                labela.set_text("The command <b>{}</b> cannot be found.\nThe <b>{}</b> files cannot be indexed.\n(Need restarting)\n\n".format(ccommand, extractor_identify[_idx]))
                 labela.set_use_markup(True)
                 switch.set_active(False)
             elif pplugdis == True:
-                labela.set_text("The command <b>{}</b> has been found.\nThe <b>{}</b> files can be indexed.\n\n".format(ccommand, extractor_identify[asde]))
+                labela.set_text("The command <b>{}</b> has been found.\nThe <b>{}</b> files can be indexed.\n\n".format(ccommand, extractor_identify[_idx]))
                 labela.set_use_markup(True)
                 switch.set_active(False)
-            elif aaa != None:
-                labela.set_text("The command <b>{}</b> has been found.\nThe <b>{}</b> files can be indexed.\n\n".format(ccommand, extractor_identify[asde]))
+            elif _comm != None:
+                if _comm == "INTERNAL":
+                    labela.set_text("The <b>{}</b> files can be indexed.\n\n".format(extractor_identify[_idx]))
+                else:
+                    labela.set_text("The command <b>{}</b> has been found.\nThe <b>{}</b> files can be indexed.\n\n".format(ccommand, extractor_identify[_idx]))
                 labela.set_use_markup(True)
                 switch.set_active(True)
-            elif (aaa == None) and (extractor_filename[asde] not in ePlugins2) :
-                labela.set_text("The command <b>{}</b> cannot be found.\nThe <b>{}</b> files cannot be indexed.\n(Need restarting)\n\n".format(ccommand, extractor_identify[asde]))
+            elif (_comm == None) and (extractor_filename[_idx] not in ePlugins2) :
+                labela.set_text("The command <b>{}</b> cannot be found.\nThe <b>{}</b> files cannot be indexed.\n(Need restarting)\n\n".format(ccommand, extractor_identify[_idx]))
                 labela.set_use_markup(True)
                 switch.set_active(False)
                 # move the plugin away
                 os.chdir("extractors")
-                os.rename(extractor_filename[asde],"disabled/"+extractor_filename[asde])
+                os.rename(extractor_filename[_idx],"disabled/"+extractor_filename[_idx])
                 os.chdir(main_dir)
                 # write error in the log file
                 flog = open(main_dir+"/LOG/log","a")
-                flog.write("{} The command {} cannot be found. The plugin {} has been disabled. The {} files cannot be indexed.\n".format(ddatettime,ccommand, extractor_filename[asde], extractor_identify[asde]))
+                flog.write("{} The command {} cannot be found. The plugin {} has been disabled. The {} files cannot be indexed.\n".format(ddatettime,ccommand, extractor_filename[_idx], extractor_identify[_idx]))
                 flog.close()
-            switch.connect("notify::active", self.activate_cb, aaa, extractor_filename[asde])
-            la1 += 1
+            switch.connect("notify::active", self.activate_cb, _comm, extractor_filename[_idx])
+            #
         self.lscrolledwindow.add(grida)
         ####### end tab 2
         ####### tab 3
         vbox3 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
         self.page3.add(vbox3)
         # language section
-        alignment2 = Gtk.Alignment()
-        alignment2.set_hexpand(True)
-        alignment2.set(0, 0, 0, 0)
+        # # alignment2 = Gtk.Alignment()
+        # alignment2 = Gtk.Alignment.new(0, 0, 0, 0)
+        # alignment2.set_hexpand(True)
+        # # alignment2.set(0, 0, 0, 0)
         hbox3a = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        label3a = Gtk.Label(l.Choose_the_language)
-        alignment2.add(label3a)
-        hbox3a.pack_start(alignment2, False, False, 0)
+        label3a = Gtk.Label(label=l.Choose_the_language)
+        # alignment2.add(label3a)
+        # hbox3a.pack_start(alignment2, False, False, 0)
+        hbox3a.pack_start(label3a, True, False, 0)
         liststore3a = Gtk.ListStore(str)
         for llang in range(len(elang_support)):
             liststore3a.append([elang_support[llang]])
@@ -248,7 +256,7 @@ class MainWindow(Gtk.Window):
         self.combo_search3a.pack_start(self.cellrenderertext, True)
         self.combo_search3a.add_attribute(self.cellrenderertext, "text", 0)
         hbox3a.pack_start(self.combo_search3a, True, True, 0)
-        button3a = Gtk.Button(l.Select)
+        button3a = Gtk.Button(label=l.Select)
         button3a.connect("clicked", self.on_language_changed)
         hbox3a.pack_start(button3a, True, True, 0)
         #
@@ -258,15 +266,15 @@ class MainWindow(Gtk.Window):
         vbox3.pack_start(separator1, False, False, 0)
         # file manager
         self.hbox100 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        checkbutton100 = Gtk.CheckButton(l.UseDefaultFM)
+        checkbutton100 = Gtk.CheckButton(label=l.UseDefaultFM)
         vbox3.pack_start(checkbutton100, False, False, 0)
-        self.label100 = Gtk.Label(l.OrUse, xalign=0)
+        self.label100 = Gtk.Label(label=l.OrUse, xalign=0)
         self.label100.set_sensitive(not_system_fm)
         self.hbox100.pack_start(self.label100, False, False, 0)
         self.entry100 = Gtk.Entry()
         self.entry100.set_sensitive(not_system_fm)
         self.hbox100.pack_start(self.entry100, True, True, 0)
-        self.button100 = Gtk.Button(l.Select)
+        self.button100 = Gtk.Button(label=l.Select)
         self.button100.set_sensitive(not_system_fm)
         self.button100.connect("clicked", self.on_filemanager_changed)
         vbox3.pack_start(self.hbox100, False, False, 0)
@@ -285,7 +293,7 @@ class MainWindow(Gtk.Window):
         # separator
         separator2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
         vbox3.pack_start(separator2, False, False, 0)
-        self.button_dellog = Gtk.Button(l.DeleteLog)
+        self.button_dellog = Gtk.Button(label=l.DeleteLog)
         self.button_dellog.connect("clicked", self.on_dellog)
         vbox3.pack_start(self.button_dellog, False, False, 0)
         separator3 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
@@ -409,10 +417,10 @@ class MainWindow(Gtk.Window):
     
 ####### tab 2
     # we need the argument 'active'
-    def activate_cb(self, button, active, ccommand, plugname):
+    def activate_cb(self, button, active, _comm, plugname):
         bstate = button.get_active()
         os.chdir(main_dir+"/extractors")
-        if ccommand:
+        if _comm:
             if bstate == True:
                 try:
                     os.rename("disabled/"+plugname, plugname)
