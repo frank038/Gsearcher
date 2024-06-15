@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-Number_version = "1.0.3"
+Number_version = "1.0.4"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -51,6 +51,12 @@ for ffile in ["DATABASE", "LOG"]:
         except Exception as E:
             print("ERRORS:", str(E))
             sys.exit()
+
+# empty the log files
+for _ff in ["LOG/file_added.log","LOG/file_discharged.log","LOG/log"]:
+    if os.path.exists(_ff):
+        os.unlink(_ff)
+
 #######
 
 # program directory
@@ -258,6 +264,14 @@ class MainWindow(Gtk.Window):
         self.connect("delete-event", Gtk.main_quit)
         self.set_events(Gdk.EventMask.KEY_PRESS_MASK)
         self.connect('key-press-event', self.on_key_pressed)
+        #
+        _db_path = "DATABASE/default.db"
+        if os.path.exists(_db_path) and os.path.islink(_db_path):
+            _db_link = os.readlink(_db_path)
+            if os.path.exists(os.path.join("DATABASE",_db_link)):
+                _db_name = os.path.splitext(_db_link)[0]
+                self.set_title("Gsearcher - "+_db_name)
+        #
         self.set_border_width(5)
         self.set_default_size(WWIDTH, EEIGHT)
         self.set_resizable(True)

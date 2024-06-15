@@ -8,3 +8,5 @@ CONFIG_XML="./DATABASE/config.xml"
 LIMIT_TAB = 10
 # for discharging useless tabs
 LIMIT_OFFSET = 250
+# for email in mbox format: 1 index mbox files - 0 no
+USE_MBOX_FILES=1
