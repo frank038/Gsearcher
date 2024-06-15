@@ -6,9 +6,9 @@ import subprocess
 # name of the module
 nameModule = 'edoc'
 # mimetype handled
-docType = 'application/msword'
+docType = ['application/msword']
 # command execute
-command_execute = "TRUE"
+command_execute = "libreoffice"
 # how to identify the file
 fidentify="Office word doc"
 # file metadata
@@ -26,7 +26,7 @@ def nametype_Module():
 #if False is returned then no text has been extract
 def ffile_content(ffile):
     try:
-       metadata1 = subprocess.check_output(["exiftool", "-FileName", "-Title", "-Subject", "-Keywords", "-Comments", "-CreateDate", "-Document", "-FileSize", ffile], universal_newlines=True)
+        metadata1 = subprocess.check_output(["exiftool", "-FileName", "-Title", "-Subject", "-Keywords", "-Comments", "-CreateDate", "-Document", "-FileSize", ffile], universal_newlines=True)
     except:
         metadata1 = ""
     try:

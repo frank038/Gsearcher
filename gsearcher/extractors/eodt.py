@@ -6,9 +6,9 @@ import subprocess
 # name of the module
 nameModule = 'eodt'
 # mimetype handled
-docType = 'application/vnd.oasis.opendocument.text'
+docType = ['application/vnd.oasis.opendocument.text']
 # command execute
-command_execute = "odt2txt"
+command_execute = "libreoffice"
 # how to identify the file
 fidentify="Libreoffice writer odt"
 # file metadata

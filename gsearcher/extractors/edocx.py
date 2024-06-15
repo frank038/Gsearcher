@@ -3,9 +3,9 @@ import subprocess
 # name of the module
 nameModule = 'edocx'
 # mimetype handled
-docType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+docType = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 # command execute - "TRUE" to bypass check for some reasons
-command_execute = "TRUE"
+command_execute = "libreoffice"
 # how to identify the file
 fidentify="Office word docx"
 # file metadata

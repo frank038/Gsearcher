@@ -6,7 +6,7 @@ import subprocess
 # name of the module
 nameModule = 'epdf'
 # mimetype handled
-docType = 'application/pdf'
+docType = ['application/pdf']
 # command executed
 command_execute = "pdftotext"
 # how to identify the file

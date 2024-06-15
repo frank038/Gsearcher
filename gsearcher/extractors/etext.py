@@ -7,7 +7,7 @@ import time
 # name of the module
 nameModule = 'etext'
 # mimetype handled
-docType = 'text/plain'
+docType = ['text/plain']
 # command execute
 command_execute = "cat"
 # how to identify the file
