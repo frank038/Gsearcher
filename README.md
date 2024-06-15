@@ -9,11 +9,13 @@ are needed.
 The extractors are all plugins, that means new ones can be created and 
 added easily. At the moment, the following plugins are present: etext.py for 
 text files, epdf.py (requires pdftotext) for pdf files, eodt.py for Libreoffice doc files 
-and edoc.py for MS doc files and edocx.py for MS docx files (all of them require libreoffice, but old versions using old more simple programs are in the folder extractors/disabled/OLD). If the program for extracting the text is not present in your system (Libreoffice is an exception), the plugin will be disabled automatically.
+and edoc.py for MS doc files and edocx.py for MS docx files (all of them require libreoffice, but old versions using old more simple programs are in the folder extractors/disabled/OLD). If the program for extracting the text is not present in your system (except for mbox which use an internal procedure), the plugin will be disabled automatically.
 
 The cfg.py is the config file for the program.
 
-About the indexers: only searchable pdf files can be indexed, so encrypter and not searcheble ones will be skipped, or will be stored malformed; the text extracted by the extractors from the files depends on the ability of them to extract it.
+About the indexers: only searchable pdf files can be indexed, so encrypter and not searcheble ones will be skipped, or will be stored malformed; the text extracted from the files by the extractors depends on the ability of them to extract it.
+
+Experimentally, emails in regular mbox format can be indexed, and its attachments (e.g. pdf and text files) as well (the same extractors for other regular files will be used). At least, those of Thunderbird can be indexed. While there is not any reasons to avoid indexing in the same database mbox files and other type of files, it is better to use a dedicated database for emails. How the mbox indexing works: after choosed the folder containing the mbox files (it is better to work with copy of them to be safe), in the folder MAIL will be created a subfolder containing single emails in mbox format extracted from that single mbox file (Thundirbird use one file for all the email by default); these files will be then indexed. This way, it is more simple to know which email contains what has been searched.
 
 The program can also handle multiple databases.
 
@@ -29,6 +31,8 @@ will search for files.
 In the configuration window, the second tab shows the extractors 
 enabled, the extractors disabled and the reasons, mainly for 
 'not command found'.
+
+Knows issues: the first time this program is used, multiple executions are needed for creating the needed files.
 
 ![My image](https://github.com/frank038/Gsearcher/blob/master/Screenshot3.png)
 
