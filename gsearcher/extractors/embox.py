@@ -89,7 +89,7 @@ def _mailbox(mbox_file):
     for _mitem in _mbox.items():
     #if _mitem:
         message = _mitem[1]
-        metadata1 = "File: "+os.path.basename(mbox_file)+"\nDate: "+message['date']+"\nFrom: "+message['from']+"\nObject: "+message['subject']
+        metadata1 = "Email : "+message['from']+" - "+message['date']+"\nDate  : "+message['date']+"\nFrom  : "+message['from']+"\nObject: "+message['subject']
         #
         if message.is_multipart():
             for part in message.get_payload():
@@ -121,7 +121,14 @@ def _mailbox(mbox_file):
                             _mtext += _data[1]
                         # os.unlink("/tmp/mail_attachment")
         else:
-            _mtext += message.get_payload(decode=True).decode()
+            try:
+                _data = message.get_payload(decode=True).decode()
+                parser = HTMLContent()
+                parser.feed(_data)
+                _mtext += parser.text
+                parser.close()
+            except:
+                _mtext += message.get_payload(decode=True).decode()
     #
     return metadata1,_mtext
 
