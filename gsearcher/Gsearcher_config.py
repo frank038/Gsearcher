@@ -11,8 +11,8 @@ import importlib
 from pathlib import Path
 import shutil
 from time import gmtime, strftime, time
-import mailbox
-import magic
+# import mailbox
+# import magic
 
 try:
     import xml.etree.cElementTree as ET
@@ -402,64 +402,65 @@ class MainWindow(Gtk.Window):
         #
         filechooserdialog.destroy()
         #
-        if USE_MBOX_FILES == 1:
-            self._check_mbox(ffolder)
+        # if USE_MBOX_FILES == 1:
+            # self._check_mbox(ffolder)
         
-    def _check_mbox(self, _folder):
-        _list_items = os.listdir(_folder)
-        #
-        for el in _list_items:
-            ffile = os.path.join(_folder,el)
-            if not os.path.isfile(ffile):
-                continue
-            # needs improvements on detection without any extension
-            fmime = magic.detect_from_filename(ffile)[0]
-            # a mbox file can be detected as text file
-            if fmime in ["application/mbox","text/plain","text/html"]:
-                self._mailbox(ffile)
+    # def _check_mbox(self, _folder):
+        # _list_items = os.listdir(_folder)
+        # #
+        # for el in _list_items:
+            # ffile = os.path.join(_folder,el)
+            # if not os.path.isfile(ffile):
+                # continue
+            # # needs improvements on detection without any extension
+            # fmime = magic.detect_from_filename(ffile)[0]
+            # # a mbox file can be detected as text file
+            # if fmime in ["application/mbox","text/plain","text/html"]:
+                # self._mailbox(ffile)
             
-        
-    def _mailbox(self, ffile):
-        _mbox = mailbox.mbox(ffile)
-        # no items means no messages or wrong file type
-        if len(_mbox.items()) == 0:
-            _mbox.close()
-            return
-        #
-        _parent_dir = os.path.dirname(ffile).split("/")[-1]
-        # subfolders in the MAIL dir
-        _dest_dir = os.path.join(main_dir, "MAIL", _parent_dir)
-        # 
-        if not os.path.exists(_dest_dir):
-            os.makedirs(_dest_dir)
-        # create a file telling the folders contain mbox files
-        if not os.path.exists(os.path.join(main_dir,"MAIL","mbox_folders")):
-            _f = open(os.path.join(main_dir,"MAIL","mbox_folders"), "w")
-            _f.write("application/mbox")
-            _f.close()
-        #
-        for _mitem in _mbox.items():
-            message = _mitem[1]
-            #metadata1 = message['date']+"\n"+message['from']+"\n"+message['subject']
-            # _mbox_add = mailbox.mbox(_dest_dir+"/"+str(message['from'])+" - "+str(message['date']))
-            ux_time = str(time())
-            if message['date']:
-                m_date = str(message['date'])
-            else:
-                m_date = ux_time
-            if message['from']:
-                m_from = str(message['from'])
-            else:
-                m_from = "Unknown"
-            if message['subject']:
-                m_subj = str(message['subject'])
-            else:
-                m_subj = "None"
-            metadata1 = m_date+"\n"+m_from+"\n"+m_subj
-            _mbox_add = mailbox.mbox(_dest_dir+"/"+m_date+" - "+str(ux_time))
-            _mbox_add.add(message.as_string())
-        #
-        _mbox.close()
+    # # create the dir MAIL and the file mbox_folders
+    # def _mailbox(self, ffile):
+        # _mbox = mailbox.mbox(ffile)
+        # # no items means no messages or wrong file type
+        # if len(_mbox.items()) == 0:
+            # _mbox.close()
+            # return
+        # #
+        # _parent_dir = os.path.dirname(ffile).split("/")[-1]
+        # # subfolders in the MAIL dir
+        # _dest_dir = os.path.join(main_dir, "MAIL", _parent_dir)
+        # # 
+        # if not os.path.exists(_dest_dir):
+            # os.makedirs(_dest_dir)
+        # # create a file telling the folders contain mbox files
+        # if not os.path.exists(os.path.join(main_dir,"MAIL","mbox_folders")):
+            # _f = open(os.path.join(main_dir,"MAIL","mbox_folders"), "w")
+            # _f.write("application/mbox")
+            # _f.close()
+        # # in indexerdb now
+        # for _mitem in _mbox.items():
+            # message = _mitem[1]
+            # #metadata1 = message['date']+"\n"+message['from']+"\n"+message['subject']
+            # # _mbox_add = mailbox.mbox(_dest_dir+"/"+str(message['from'])+" - "+str(message['date']))
+            # ux_time = str(time())
+            # if message['date']:
+                # m_date = str(message['date'])
+            # else:
+                # m_date = ux_time
+            # if message['from']:
+                # m_from = str(message['from'])
+            # else:
+                # m_from = "Unknown"
+            # if message['subject']:
+                # m_subj = str(message['subject'])
+            # else:
+                # m_subj = "None"
+            # metadata1 = m_date+"\n"+m_from+"\n"+m_subj
+            # # _mbox_add = mailbox.mbox(_dest_dir+"/"+m_date+" - "+str(ux_time))
+            # _mbox_add = mailbox.mbox(_dest_dir+"/"+m_date+" - "+m_from)
+            # _mbox_add.add(message.as_string())
+        # #
+        # _mbox.close()
     
     
     # get the number of row clicking on each row

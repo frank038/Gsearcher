@@ -8,7 +8,7 @@ import glob
 import magic
 import importlib
 from pathlib import Path
-from time import sleep, gmtime, strftime
+from time import sleep, gmtime, strftime, time
 
 from cfg import USE_MBOX_FILES
 if USE_MBOX_FILES == 1:
@@ -107,6 +107,7 @@ class vvar:
             os.chdir(folder_to_index)
             self.list_file = glob.glob("*")
             llist_file = self.list_file[:]
+            mmbox_file = []
             for ffile in self.list_file:
                 sleep(0.1)
                 if not os.path.isfile(ffile):
@@ -116,10 +117,19 @@ class vvar:
                 try:
                     pathfile = folder_to_index+"/"+ffile
                     if (Path(folder_to_index).exists()) and (os.access(pathfile, os.R_OK)):
+                        file_magic = magic.detect_from_filename(ffile)[0]
+                        if USE_MBOX_FILES == 1:
+                            # detect mbox file
+                            if file_magic in ["text/plain","text/html"]:
+                                ret = self.mbox_detect(ffile)
+                                if ret == 1:
+                                    mmbox_file.append(ffile)
+                                    llist_file = []
+                                    continue
+                        #
                         self.ii += 1
                         self.pfiles.append(folder_to_index+"/"+ffile)
                         #
-                        file_magic = magic.detect_from_filename(ffile)[0]
                         _is_found = 0
                         for el in self.extractor_mimmodule:
                             if file_magic in el:
@@ -158,7 +168,8 @@ class vvar:
             self.FFOLDER_NOT += 1
             flog.write("{} Folder issue during indexing: {}\n".format(self.ddatettime, folder_to_index))
             self.iiiiii += 1
-        return llist_file 
+        #
+        return llist_file,mmbox_file
     
     # the name of all files stored
     def all_name_file(self):
@@ -180,48 +191,118 @@ class vvar:
             else:
                 self.FFOLDER_NOT += 1
                 self.flog.write("{} Folder not found: {}\n".format(self.ddatettime, ffolder))
-        
+    
+    # detect mbox file
+    def mbox_detect(self, ffile):
+        _mbox = mailbox.mbox(ffile)
+        # no items means no messages or wrong file type
+        if len(_mbox.items()) == 0:
+            _mbox.close()
+            return 0
+        else:
+            return 1
+    
+    # check the mbox file for new emails
+    def _mailbox(self, ffile):
+        # main_dir = os.getcwd()
+        ux_time = str(time())
+        folder_to_index = os.path.dirname(os.path.realpath(ffile))
+        # single email in mbox file
+        m_file_in_mbox = []
+        # the email in the database
+        m_file_in_db = []
+        self.cur.execute("""select name from tabella""")
+        m_names = self.cur.fetchall()
+        if m_names:
+            for ell in m_names:
+                m_file_in_db.append(ell[0])
+        # list of tuple
+        rae = self.cur.fetchmany()
+        #
+        _mbox = mailbox.mbox(ffile)
+        #
+        for _mitem in _mbox.items():
+            message = _mitem[1]
+            if message['date']:
+                m_date = str(message['date'])
+            else:
+                # m_date = ux_time
+                m_date = "unknown"
+            if message['from']:
+                m_from = str(message['from'])
+            else:
+                m_from = "Unknown"
+            # if message['subject']:
+                # m_subj = str(message['subject'])
+            # else:
+                # m_subj = "None"
+            #
+            stext = m_date+" - "+m_from
+            self.cur.execute("""select name from tabella where name=(?)""", (stext,))
+            # list of tuple
+            rae = self.cur.fetchmany()
+            # rae = self.cur.fetchall()
+            # rae = self.cur.fetchone()
+            #
+            m_file_in_mbox.append(stext)
+            if stext not in m_file_in_db:
+                #m_file_in_mbox.append(stext)
+                try:
+                    os.unlink("/tmp/123456789")
+                except:
+                    pass
+                _mbox_add = mailbox.mbox("/tmp/123456789")
+                _mbox_add.add(message.as_string())
+                for ell in self.extractors:
+                    if ell[0].fidentify == "mbox":
+                        obj = ell[0]
+                        break
+                freturn = obj.ffile_content("/tmp/123456789")
+                # 
+                if freturn == False:
+                    self.flogd.write("{} File discharged for no content: {} in {}\n".format(self.ddatettime, fti, folder_to_index))
+                    self.iiiii += 1
+                else:
+                    self.iii += 1
+                    fti = stext
+                    fmime = "application/mbox"
+                    # mmtime = os.stat(ffile).st_mtime
+                    mmtime = str(time())
+                    self.METADATA = freturn[0]
+                    ccontent = freturn[1]
+                    self.TAG1 = freturn[2]
+                    # fti, fmime, mmtime, folder_to_index, ccontent, self.METADATA, self.TAG1
+                    self.cur.execute("""insert into tabella (name, mime, mtime, dir, content, metadata, tag1) values (?,?,?,?,?,?,?)""", (fti, fmime, mmtime, folder_to_index, ccontent, self.METADATA, self.TAG1))
+                    self.con.commit()
+                    self.flogadd.write("{} File added: {} in {}\n".format(self.ddatettime, fti, folder_to_index))
+        #
+        if m_file_in_mbox:
+            for _ff in m_file_in_db:
+                if _ff not in m_file_in_mbox:
+                    self.cur.execute("""delete from tabella where name=(?)""", (_ff, ))
+                    self.con.commit()
+                    self.flog.write("{} File deleted from database because the folder doesn't exist anymore': {} in {}\n".format(self.ddatettime, _ff, folder_to_index))
+        #
+        _mbox.close()
+    
+    
     def ins_db(self):
         self.check_ffolder()
         for folder_to_index in self.lffolder:
-            # check it is a mail folder
-            # needs improvemets
-            _folder_name = os.path.basename(folder_to_index)
             #
-            if os.path.exists(os.path.join(os.getcwd(), "MAIL", _folder_name)):
-                folder_to_index = os.path.join(os.getcwd(), "MAIL", _folder_name)
-            #
-            flist_file = self.execute_indexing(folder_to_index)
+            flist_file,fmbox_file = self.execute_indexing(folder_to_index)
             if flist_file != []:
                 for fti in flist_file:
-                    if USE_MBOX_FILES == 1:
-                        # skip msf file in mbox folders
-                        # need improvements
-                        if fti[-3:] == "msf":
-                            continue
                     mmtime = os.stat(fti).st_mtime
                     fmime = magic.detect_from_filename(fti)[0]
                     #nmod = self.extractor_mimmodule.index(fmime)
                     # obj = self.extractor_objmodule[nmod]
                     obj = None
-                    # skip mbox file
-                    _is_mbox = 0
-                    _mbox = mailbox.mbox(fti)
-                    if len(_mbox.items()) > 0:
-                        _mbox.close()
-                        _is_mbox = 1
                     #
                     for ell in self.extractors:
-                        if USE_MBOX_FILES == 1 and _is_mbox == 1:
-                            if fmime in ["application/mbox","text/plain","text/html"]:
-                                if fmime in ell[1]:
-                                    if ell[0].fidentify == "mbox":
-                                        obj = ell[0]
-                                        break
-                        else:
-                            if fmime in ell[1] and ell[0].fidentify != "mbox":
-                                obj = ell[0]
-                                break
+                        if fmime in ell[1] and ell[0].fidentify != "mbox":
+                            obj = ell[0]
+                            break
                     # maybe redundant
                     if obj == None:
                         self.flogd.write("{} File discharged for no content: {} in {}\n".format(self.ddatettime, fti, folder_to_index))
@@ -241,9 +322,14 @@ class vvar:
                         self.cur.execute("""insert into tabella (name, mime, mtime, dir, content, metadata, tag1) values (?,?,?,?,?,?,?)""", (fti, fmime, mmtime, folder_to_index, ccontent, self.METADATA, self.TAG1))
                         self.con.commit()
                         self.flogadd.write("{} File added: {} in {}\n".format(self.ddatettime, fti, folder_to_index))
-            else:
-                pass
-            
+                # delete deleted files
+                self.delete_notfile_row()
+            #
+            if fmbox_file != []:
+                for mfile in fmbox_file:
+                    self._mailbox(mfile)
+    
+    
     # deletes the related row if file is accessible no more
     def delete_notfile_row(self):
         cname = self.all_name_file()
@@ -269,7 +355,7 @@ class vvar:
     
     def _index(self):
         self.ins_db()
-        self.delete_notfile_row()
+        # self.delete_notfile_row()
         aaa = self.return_file()
         print(aaa)
 

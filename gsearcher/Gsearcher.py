@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-Number_version = "1.0.4"
+Number_version = "1.0.5"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -454,36 +454,36 @@ class MainWindow(Gtk.Window):
         elif response_id == Gtk.ResponseType.DELETE_EVENT:
             messagedialoge.destroy()
     
-    # dialog to ask confirmation to delete from database the selected file
-    def on_delete_item(self, widget):
-        messagedialogd = Gtk.MessageDialog(parent=self,
-                                          modal=True,
-                                          message_type=Gtk.MessageType.WARNING,
-                                          buttons=Gtk.ButtonsType.OK_CANCEL,
-                                          text=l.IndexerMessage8)
-        messagedialogd.connect("response", self.dialog_responsed)
-        messagedialogd.show()
+    # # dialog to ask confirmation to delete from database the selected file
+    # def on_delete_item(self, widget):
+        # messagedialogd = Gtk.MessageDialog(parent=self,
+                                          # modal=True,
+                                          # message_type=Gtk.MessageType.WARNING,
+                                          # buttons=Gtk.ButtonsType.OK_CANCEL,
+                                          # text=l.IndexerMessage8)
+        # messagedialogd.connect("response", self.dialog_responsed)
+        # messagedialogd.show()
     
-    def dialog_responsed(self, messagedialogd, response_id):
-        if response_id == Gtk.ResponseType.OK:
-            self.on_delete_item2(self.button_delete)
-            messagedialogd.destroy()
-        elif response_id == Gtk.ResponseType.CANCEL:
-            messagedialogd.destroy()
-        elif response_id == Gtk.ResponseType.DELETE_EVENT:
-            messagedialogd.destroy()
+    # def dialog_responsed(self, messagedialogd, response_id):
+        # if response_id == Gtk.ResponseType.OK:
+            # self.on_delete_item2(self.button_delete)
+            # messagedialogd.destroy()
+        # elif response_id == Gtk.ResponseType.CANCEL:
+            # messagedialogd.destroy()
+        # elif response_id == Gtk.ResponseType.DELETE_EVENT:
+            # messagedialogd.destroy()
     
-    # function for the above dialog
-    def on_delete_item2(self, widget):
-        (model, iter) = self.selection1.get_selected()
-        if iter != None:
-            dname = model[iter][1]
-            dfold = model[iter][3]
-            try:
-                cur.execute("""delete from tabella where name=(?) and dir=(?)""", (dname, dfold))
-                con.commit()
-            except:
-                pass
+    # # function for the above dialog
+    # def on_delete_item2(self, widget):
+        # (model, iter) = self.selection1.get_selected()
+        # if iter != None:
+            # dname = model[iter][1]
+            # dfold = model[iter][3]
+            # try:
+                # cur.execute("""delete from tabella where name=(?) and dir=(?)""", (dname, dfold))
+                # con.commit()
+            # except:
+                # pass
     
     # chooses the database to open
     def open_database(self, widget):
