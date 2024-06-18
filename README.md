@@ -32,8 +32,6 @@ In the configuration window, the second tab shows the extractors
 enabled, the extractors disabled and the reasons, mainly for 
 'not command found'.
 
-Knows issues: the first time this program is used, multiple executions are needed for creating the needed files.
-
 ![My image](https://github.com/frank038/Gsearcher/blob/master/Screenshot3.png)
 
 ![My image](https://github.com/frank038/Gsearcher/blob/master/Screenshot1.png)
