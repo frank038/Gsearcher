@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-Number_version = "1.0.5"
+Number_version = "1.0.6"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -657,9 +657,19 @@ class MainWindow(Gtk.Window):
                     elif not USE_MARKUP:
                         label.set_text(aaaaa)
                     #
-                    page.add(label)
+                    # label.set_selectable(True)
+                    #
+                    scrolledwindow = Gtk.ScrolledWindow()
+                    scrolledwindow.set_hexpand(True)
+                    scrolledwindow.set_vexpand(False)
+                    scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.ALWAYS)
+                    scrolledwindow.set_placement(Gtk.CornerType.TOP_LEFT)
+                    scrolledwindow.add(label)
+                    page.pack_start(scrolledwindow, True, True, 10)
+                    #
                     self.notebook.append_page(page, Gtk.Label(label=l.Abstract))
                     page.show()
+                    scrolledwindow.show()
                     label.show()
                 
                 # adds tab for METADATA
@@ -668,7 +678,7 @@ class MainWindow(Gtk.Window):
                 lmeta_string = lmeta_tuple[0]
                 lmeta_tag1 = lmeta_tuple[1]
                 if lmeta_string != "":
-                     # scrolled window
+                    # scrolled window
                     scrolledwindow = Gtk.ScrolledWindow()
                     scrolledwindow.set_hexpand(True)
                     scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
