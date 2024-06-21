@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-Number_version = "1.0.6"
+Number_version = "1.0.7"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -239,8 +239,16 @@ for ccommand in extractor_command:
         flog.close()
     la1 += 1
 
+
 # combo_search initialization: And
 combo_box_name = l.And
+if SEARCH_TYPE == 1:
+    combo_box_name = l.Or
+elif SEARCH_TYPE == 2:
+    combo_box_name = l.Metadata
+elif SEARCH_TYPE == 3:
+    combo_box_name = l.Search
+    
 
 # # limits the number of opened tabs
 # LIMIT_TAB = 10
@@ -260,17 +268,12 @@ class MainWindow(Gtk.Window):
 
     def __init__(self):
         Gtk.Window.__init__(self, title="Gsearcher")
-        self.set_icon_from_file("DATA/icons/gsearcher.svg")
+        self.set_icon_from_file("DATA/icons/gsearcher.png")
         self.connect("delete-event", Gtk.main_quit)
         self.set_events(Gdk.EventMask.KEY_PRESS_MASK)
         self.connect('key-press-event', self.on_key_pressed)
         #
-        _db_path = "DATABASE/default.db"
-        if os.path.exists(_db_path) and os.path.islink(_db_path):
-            _db_link = os.readlink(_db_path)
-            if os.path.exists(os.path.join("DATABASE",_db_link)):
-                _db_name = os.path.splitext(_db_link)[0]
-                self.set_title("Gsearcher - "+_db_name)
+        self._set_name()
         #
         self.set_border_width(5)
         self.set_default_size(WWIDTH, EEIGHT)
@@ -340,9 +343,11 @@ class MainWindow(Gtk.Window):
         self.liststore.append([l.And])
         self.liststore.append([l.Or])
         self.liststore.append([l.Metadata])
+        self.liststore.append([l.Search])
         self.combo_search = Gtk.ComboBox()
         self.combo_search.set_model(self.liststore)
-        self.combo_search.set_active(0)
+        #
+        self.combo_search.set_active(int(SEARCH_TYPE))
         self.combo_search.connect("changed", self.on_combo_search_changed)
         self.cellrenderertext = Gtk.CellRendererText()
         self.combo_search.pack_start(self.cellrenderertext, True)
@@ -419,7 +424,21 @@ class MainWindow(Gtk.Window):
         self.label1 = Gtk.Label()
         self.label1.set_text("   \n   \n   \n   ")
         self.page1.add(self.label1)
-        self.notebook.append_page(self.page1, Gtk.Label(label=l.Abstract))
+        if int(SEARCH_TYPE) == 3:
+            # self.box_1 = Gtk.Box()
+            # btn_1 = Gtk.Button(label=l.Open)
+            # btn_1.connect("clicked", self.on_btn_1)
+            # self.txt_field_1 = Gtk.Entry()
+            # self.txt_field_1.set_editable(False)
+            # self.box_1.pack_start(btn_1, False, False, 1)
+            # self.box_1.pack_start(self.txt_field_1, False, True, 1)
+            # self.page1.add(self.box_1)
+            # # self.page1.pack_start(self.box_1, False, True, 1)
+            # self.notebook.append_page(self.page1, Gtk.Label(label=l.Search))
+            self.bbb()
+        else:
+            # self.notebook.append_page(self.page1, Gtk.Label(label=l.Abstract))
+            self.aaa()
         # button_search function
         if is_database:
             self.button_search.connect("clicked", self.on_button_search)
@@ -427,6 +446,36 @@ class MainWindow(Gtk.Window):
         self.button_open_entry.connect("clicked", self.on_open_fm)
         #self.button_delete.connect("clicked", self.on_delete_item)
         self.entry_search.grab_focus()
+    
+    def _set_name(self):
+        _db_path = "DATABASE/default.db"
+        if os.path.exists(_db_path) and os.path.islink(_db_path):
+            _db_link = os.readlink(_db_path)
+            if os.path.exists(os.path.join("DATABASE",_db_link)):
+                _db_name = os.path.splitext(_db_link)[0]
+                if combo_box_name == l.Search:
+                    self.set_title("Gsearcher - searching...")
+                else:
+                    self.set_title("Gsearcher - "+_db_name)
+        
+    def on_btn_1(self, widget):
+        dialog = Gtk.FileChooserDialog(
+            title="Please choose a folder",
+            parent=self,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK
+        )
+        dialog.set_default_size(800, 400)
+        
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            self.txt_field_1.set_text(dialog.get_filename())
+        elif response == Gtk.ResponseType.CANCEL:
+            dialog.destroy()
+        dialog.destroy()
+    
     
     # press return to query
     def on_key_pressed(self, widget, event):
@@ -496,16 +545,34 @@ class MainWindow(Gtk.Window):
         if iter != None:
             if file_manager == 'SYSTEM':
                 try:
-                    os.system("xdg-open '{}'".format(model[iter][3].replace("'","'\\''")))
-                except:
-                    print("System file manager: error.")
+                    _cmd = "xdg-open '{}'".format(model[iter][3].replace("'","'\\''"))
+                    subprocess.Popen(_cmd, shell=True)
+                except Exception as E:
+                    # print("System file manager: error.")
+                    message1 = str(E)
+                    messagedialog1 = Gtk.MessageDialog(parent=self,
+                                          modal=True,
+                                          message_type=Gtk.MessageType.WARNING,
+                                          buttons=Gtk.ButtonsType.OK,
+                                          text=message1)
+                    messagedialog1.connect("response", self.dialog_response1)
+                    messagedialog1.show()
             else:
                 try:
                     fffolder = str(model[iter][3]).replace("'","\'")
                     ccommand = str(file_manager.replace("%F",'"'+fffolder+'"'))
-                    os.system("{}".format(ccommand))
-                except:
-                    print("Custom file manager: error.")
+                    # os.system("{}".format(ccommand))
+                    subprocess.Popen(ccomand, shell=True)
+                except Exception as E:
+                    # print("Custom file manager: error.")
+                    message1 = str(E)
+                    messagedialog1 = Gtk.MessageDialog(parent=self,
+                                          modal=True,
+                                          message_type=Gtk.MessageType.WARNING,
+                                          buttons=Gtk.ButtonsType.OK,
+                                          text=message1)
+                    messagedialog1.connect("response", self.dialog_response1)
+                    messagedialog1.show()
     
     # returns the combo_search choise - default And
     def on_combo_search_changed(self, combo_search):
@@ -514,9 +581,73 @@ class MainWindow(Gtk.Window):
         if tree_iter != None:
             model = self.combo_search.get_model()
             combo_box_name = model[tree_iter][0]
+            if combo_box_name == l.Search:
+                # self.notebook.set_tab_label_text(self.page1, combo_box_name)
+                self.bbb()
+            else:
+                # self.notebook.set_tab_label_text(self.page1, l.Abstract)
+                self.aaa()
+            self._set_name()
         else:
             pass
     
+    # not searching structure
+    def aaa(self):
+        npg = self.notebook.get_n_pages()
+        for ttab in range(npg):
+            self.notebook.remove_page(0)
+        page = Gtk.Box()
+        page.set_border_width(10)
+        label = Gtk.Label(label="  \n  \n  \n  ")
+        page.add(label)
+        self.notebook.append_page(page, Gtk.Label(label=l.Abstract))
+        page.show()
+        label.show()
+    
+    # searching structure
+    def bbb(self):
+        npg = self.notebook.get_n_pages()
+        for ttab in range(npg):
+            self.notebook.remove_page(0)
+        
+        self.box_0 = Gtk.VBox()
+        
+        self.box_1 = Gtk.Box()
+        self.box_0.add(self.box_1)
+        btn_1 = Gtk.Button(label=l.Open)
+        btn_1.connect("clicked", self.on_btn_1)
+        self.txt_field_1 = Gtk.Entry()
+        self.txt_field_1.set_editable(False)
+        self.box_1.pack_start(btn_1, False, False, 1)
+        self.box_1.pack_start(self.txt_field_1, False, True, 1)
+        
+        self.box_2 = Gtk.Box()
+        self.box_0.add(self.box_2)
+        self.chk_1 = Gtk.CheckButton(label=l.FModification+"   ")
+        self.chk_1.connect("toggled", self.on_check_button_toggle)
+        self.box_2.add(self.chk_1)
+        self.chk_2 = Gtk.CheckButton(label=l.FAccess+"   ")
+        self.chk_2.connect("toggled", self.on_check_button_toggle)
+        self.box_2.add(self.chk_2)
+        lbl_3 = Gtk.Label(label=l.FDAY+": ")
+        self.box_2.add(lbl_3)
+        self.dentry = Gtk.Entry()
+        self.box_2.pack_start(self.dentry, False, True,0)
+        self.chk_3 = Gtk.CheckButton(label=l.FCurrent)
+        self.chk_3.set_active(True)
+        self.box_2.add(self.chk_3)
+        
+        self.page1.add(self.box_0)
+        self.notebook.append_page(self.page1, Gtk.Label(label=l.Search))
+        
+    def on_check_button_toggle(self, checkbox):
+        if checkbox.get_label() == l.FModification+"   ":
+            if checkbox.get_active():
+                self.chk_2.set_active(False)
+        elif checkbox.get_label() == l.FAccess+"   ":
+            if checkbox.get_active():
+                self.chk_1.set_active(False)
+        
     # return the file name of the selsected row
     # fill the notebook
     def on_liststore_changed(self, widget, row, col):
@@ -531,7 +662,6 @@ class MainWindow(Gtk.Window):
         pathfile = text3
         
         SEARCHING_FILE = (text1, text3)
-        
         stext = self.stext1
         stext1 = []
         stext2 = ""
@@ -543,7 +673,8 @@ class MainWindow(Gtk.Window):
             stext2 += stext1[-1]
             stext = stext2
         # if Metadata is not the choise
-        if not combo_box_name == l.Metadata:
+        # if not combo_box_name == l.Metadata:
+        if combo_box_name == l.And or combo_box_name == l.Or:
             rrcontent = []
             cur.execute("""select offsets(tabella) from tabella where content match ?""", (stext,))
             rrcontent = cur.fetchall()
@@ -717,7 +848,8 @@ class MainWindow(Gtk.Window):
                     labelt.show()
                     page.show()
         
-        elif combo_box_name == "Metadata":
+        # elif combo_box_name == "Metadata":
+        elif combo_box_name == l.Metadata:
             cur.execute("""select metadata,content,tag1 from tabella where name=(?) and dir=(?)""", (namefile, pathfile))
             lmeta_tuple = cur.fetchone() 
             lmeta_string = lmeta_tuple[0]
@@ -767,21 +899,13 @@ class MainWindow(Gtk.Window):
             self.notebook.append_page(page, Gtk.Label(label=l.Abstract))
             label.show()
             page.show()
-            
+        
+        # elif combo_box_name == l.Search:
+            # pass
 
     # searches the finding words  
     # populate the liststore  
     def on_button_search(self, button):
-        npg = self.notebook.get_n_pages()
-        for ttab in range(npg):
-            self.notebook.remove_page(0)
-        page = Gtk.Box()
-        page.set_border_width(10)
-        label = Gtk.Label(label="  \n  \n  \n  ")
-        page.add(label)
-        self.notebook.append_page(page, Gtk.Label(label=l.Abstract))
-        page.show()
-        label.show()
         self.stext1 = self.entry_search.get_text().lower()
         stext = self.stext1
 
@@ -802,7 +926,7 @@ class MainWindow(Gtk.Window):
                     ffolder = rae[lenrae][2]
                     self.liststore1.append([str(lenrae+1),nname,ttype, ffolder])
 
-            if combo_box_name == l.Or:
+            elif combo_box_name == l.Or:
                 if len(self.liststore1) != 0:
                     for i in range(len(self.liststore1)):
                         iter = self.liststore1.get_iter(0)
@@ -821,7 +945,7 @@ class MainWindow(Gtk.Window):
                     ffolder = rae[lenrae][2]
                     self.liststore1.append([str(lenrae+1), nname,ttype, ffolder])
 
-            if combo_box_name == l.Metadata:
+            elif combo_box_name == l.Metadata:
                 if len(self.liststore1) != 0:
                     for i in range(len(self.liststore1)):
                         iter = self.liststore1.get_iter(0)
@@ -839,7 +963,55 @@ class MainWindow(Gtk.Window):
                     ttype = rae[lenrae][1]
                     ffolder = rae[lenrae][2]
                     self.liststore1.append([str(lenrae+1), nname,ttype, ffolder])
-
+            
+            elif combo_box_name == l.Search:
+                if len(self.liststore1) != 0:
+                    for i in range(len(self.liststore1)):
+                        iter = self.liststore1.get_iter(0)
+                        self.liststore1.remove(iter)
+                
+                wlist = stext.strip()
+                self._on_search(wlist)
+                
+    def _on_search(self, _item):
+        try:
+            _dir = self.txt_field_1.get_text()
+            if _dir == None or _dir == "":
+                return
+            if self.chk_1.get_active() == False or self.chk_2.get_active() == False:
+                cmd = "find {} -iname '*{}*'".format(_dir, _item)
+            elif self.chk_1.get_active():
+                if isinstance(int(self.dentry.get_text()), int) and int(self.dentry.get_text()) > 0:
+                    if self.chk_3.get_active():
+                        cmd = "find {} -maxdepth 1 -iname '*{}*' -mtime -{}".format(_dir, _item, int(self.dentry.get_text()))
+                    else:
+                        cmd = "find {} -iname '*{}*' -mtime -{}".format(_dir, _item, int(self.dentry.get_text()))
+            
+            elif self.chk_2.get_active():
+                if isinstance(int(self.dentry.get_text()), int) and int(self.dentry.get_text()) > 0:
+                    if self.chk_3.get_active():
+                        cmd = "find {} -maxdepth 1 -iname '*{}*' -atime -{}".format(_dir, _item, int(self.dentry.get_text()))
+                    else:
+                        cmd = "find {} -iname '*{}*' -atime -{}".format(_dir, _item, int(self.dentry.get_text()))
+            
+            process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=False)
+            stdout, stderr = process.communicate()
+            _ret_list = stdout.decode().split("\n")[:-1]
+            #
+            for lenrae,el in enumerate(_ret_list):
+                ffolder,nname = os.path.split(el)
+                ttype,val = Gio.content_type_guess(filename=el, data=None)
+                self.liststore1.append([str(lenrae+1), nname,ttype, ffolder])
+        except Exception as E:
+            message1 = str(E)
+            messagedialog1 = Gtk.MessageDialog(parent=self,
+                                  modal=True,
+                                  message_type=Gtk.MessageType.WARNING,
+                                  buttons=Gtk.ButtonsType.OK,
+                                  text=message1)
+            messagedialog1.connect("response", self.dialog_response1)
+            messagedialog1.show()
+    
     # routine to index the file in folders
     def start_index2(self):
         llist = []
