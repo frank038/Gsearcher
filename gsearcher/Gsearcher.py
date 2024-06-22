@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-Number_version = "1.0.7"
+Number_version = "1.0.8"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -425,19 +425,8 @@ class MainWindow(Gtk.Window):
         self.label1.set_text("   \n   \n   \n   ")
         self.page1.add(self.label1)
         if int(SEARCH_TYPE) == 3:
-            # self.box_1 = Gtk.Box()
-            # btn_1 = Gtk.Button(label=l.Open)
-            # btn_1.connect("clicked", self.on_btn_1)
-            # self.txt_field_1 = Gtk.Entry()
-            # self.txt_field_1.set_editable(False)
-            # self.box_1.pack_start(btn_1, False, False, 1)
-            # self.box_1.pack_start(self.txt_field_1, False, True, 1)
-            # self.page1.add(self.box_1)
-            # # self.page1.pack_start(self.box_1, False, True, 1)
-            # self.notebook.append_page(self.page1, Gtk.Label(label=l.Search))
             self.bbb()
         else:
-            # self.notebook.append_page(self.page1, Gtk.Label(label=l.Abstract))
             self.aaa()
         # button_search function
         if is_database:
@@ -575,21 +564,20 @@ class MainWindow(Gtk.Window):
                     messagedialog1.show()
     
     # returns the combo_search choise - default And
-    def on_combo_search_changed(self, combo_search):
+    def on_combo_search_changed(self, widget):
         global combo_box_name
         tree_iter = self.combo_search.get_active_iter()
         if tree_iter != None:
             model = self.combo_search.get_model()
             combo_box_name = model[tree_iter][0]
             if combo_box_name == l.Search:
-                # self.notebook.set_tab_label_text(self.page1, combo_box_name)
                 self.bbb()
             else:
-                # self.notebook.set_tab_label_text(self.page1, l.Abstract)
                 self.aaa()
             self._set_name()
-        else:
-            pass
+        
+        self.liststore1.clear()
+    
     
     # not searching structure
     def aaa(self):
@@ -601,14 +589,18 @@ class MainWindow(Gtk.Window):
         label = Gtk.Label(label="  \n  \n  \n  ")
         page.add(label)
         self.notebook.append_page(page, Gtk.Label(label=l.Abstract))
-        page.show()
-        label.show()
+        page.show_all()
+        
     
     # searching structure
     def bbb(self):
         npg = self.notebook.get_n_pages()
         for ttab in range(npg):
             self.notebook.remove_page(0)
+        
+        page = Gtk.Box()
+        page.set_border_width(10)
+        label = Gtk.Label(label="  \n  \n  \n  ")
         
         self.box_0 = Gtk.VBox()
         
@@ -619,7 +611,7 @@ class MainWindow(Gtk.Window):
         self.txt_field_1 = Gtk.Entry()
         self.txt_field_1.set_editable(False)
         self.box_1.pack_start(btn_1, False, False, 1)
-        self.box_1.pack_start(self.txt_field_1, False, True, 1)
+        self.box_1.pack_start(self.txt_field_1, True, True, 2)
         
         self.box_2 = Gtk.Box()
         self.box_0.add(self.box_2)
@@ -637,9 +629,12 @@ class MainWindow(Gtk.Window):
         self.chk_3.set_active(True)
         self.box_2.add(self.chk_3)
         
-        self.page1.add(self.box_0)
-        self.notebook.append_page(self.page1, Gtk.Label(label=l.Search))
+        page.add(self.box_0)
+        self.notebook.append_page(page, Gtk.Label(label=l.Search))
         
+        page.show_all()
+        
+    
     def on_check_button_toggle(self, checkbox):
         if checkbox.get_label() == l.FModification+"   ":
             if checkbox.get_active():
@@ -964,35 +959,50 @@ class MainWindow(Gtk.Window):
                     ffolder = rae[lenrae][2]
                     self.liststore1.append([str(lenrae+1), nname,ttype, ffolder])
             
-            elif combo_box_name == l.Search:
-                if len(self.liststore1) != 0:
-                    for i in range(len(self.liststore1)):
-                        iter = self.liststore1.get_iter(0)
-                        self.liststore1.remove(iter)
-                
-                wlist = stext.strip()
-                self._on_search(wlist)
+        if combo_box_name == l.Search:
+            if len(self.liststore1) != 0:
+                for i in range(len(self.liststore1)):
+                    iter = self.liststore1.get_iter(0)
+                    self.liststore1.remove(iter)
+            
+            wlist = stext.strip()
+            self._on_search(wlist)
                 
     def _on_search(self, _item):
         try:
             _dir = self.txt_field_1.get_text()
             if _dir == None or _dir == "":
                 return
-            if self.chk_1.get_active() == False or self.chk_2.get_active() == False:
-                cmd = "find {} -iname '*{}*'".format(_dir, _item)
-            elif self.chk_1.get_active():
-                if isinstance(int(self.dentry.get_text()), int) and int(self.dentry.get_text()) > 0:
-                    if self.chk_3.get_active():
-                        cmd = "find {} -maxdepth 1 -iname '*{}*' -mtime -{}".format(_dir, _item, int(self.dentry.get_text()))
-                    else:
-                        cmd = "find {} -iname '*{}*' -mtime -{}".format(_dir, _item, int(self.dentry.get_text()))
             
-            elif self.chk_2.get_active():
-                if isinstance(int(self.dentry.get_text()), int) and int(self.dentry.get_text()) > 0:
+            if self.chk_1.get_active() == False and self.chk_2.get_active() == False and _item != "":
+                if self.chk_3.get_active():
+                    cmd = "find {} -maxdepth 1 -iname '*{}*'".format(_dir, _item)
+                else:
+                    cmd = "find {} -iname '*{}*'".format(_dir, _item)
+            
+            elif self.chk_1.get_active():
+                if self.dentry.get_text() != "" and isinstance(int(self.dentry.get_text()), int) and int(self.dentry.get_text()) > 0:
                     if self.chk_3.get_active():
-                        cmd = "find {} -maxdepth 1 -iname '*{}*' -atime -{}".format(_dir, _item, int(self.dentry.get_text()))
-                    else:
+                        if _item != "":
+                            cmd = "find {} -maxdepth 1 -iname '*{}*' -mtime -{}".format(_dir, _item, int(self.dentry.get_text()))
+                        else:
+                            cmd = "find {} -maxdepth 1 -mtime -{}".format(_dir, int(self.dentry.get_text()))
+                    elif _item != "":
+                        cmd = "find {} -iname '*{}*' -mtime -{}".format(_dir, _item, int(self.dentry.get_text()))
+                    elif _item == "":
+                        cmd = "find {} -mtime -{}".format(_dir, int(self.dentry.get_text()))
+                    
+            elif self.chk_2.get_active():
+                if self.dentry.get_text() != "" and isinstance(int(self.dentry.get_text()), int) and int(self.dentry.get_text()) > 0:
+                    if self.chk_3.get_active():
+                        if _item != "":
+                            cmd = "find {} -maxdepth 1 -iname '*{}*' -atime -{}".format(_dir, _item, int(self.dentry.get_text()))
+                        else:
+                            cmd = "find {} -maxdepth 1 -atime -{}".format(_dir, int(self.dentry.get_text()))
+                    elif _item != "":
                         cmd = "find {} -iname '*{}*' -atime -{}".format(_dir, _item, int(self.dentry.get_text()))
+                    elif _item == "":
+                        cmd = "find {} -atime -{}".format(_dir, int(self.dentry.get_text()))
             
             process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=False)
             stdout, stderr = process.communicate()
