@@ -2,7 +2,7 @@ Gsearcher
 
 Free to use and modify.
 
-This is a program for searching text in files.
+This is a program for searching text in files. It is also a simple frontend to the console program find for searching files by name or by modification time or by access time.
 It is written in Python3 and Gtk3 libraries. Python3-magic and optionally exiftool for metadata 
 are needed.
 
