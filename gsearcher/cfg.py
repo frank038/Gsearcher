@@ -1,5 +1,5 @@
 # searching type at startup: 0 And - 1 Or - 2 Metadata - 3 Search
-SEARCH_TYPE=0
+SEARCH_TYPE=3
 # width of the main window
 WWIDTH=1100
 # height of the manin window

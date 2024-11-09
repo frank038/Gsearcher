@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-Number_version = "1.0.8"
+Number_version = "1.0.9"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -71,6 +71,8 @@ ddatettime = strftime("%Y %b %d %H:%M:%S", gmtime())
 
 # checks if the link to the config file exists and it is a link
 def cr_config():
+    if SEARCH_TYPE == 3:
+        return
     if not os.path.islink(CONFIG_XML):
         print("Problem with the link config.xml.")
         os.execl("./Gsearcher_choose_db.py","&")
@@ -79,13 +81,14 @@ def cr_config():
 cr_config()
 
 # loads the config.xml file
-try:
-    tree = ET.parse(CONFIG_XML)
-except:
-    print("Error with the config file: reinstall the program.")
-    sys.exit()
-else:
-    root = tree.getroot()
+if SEARCH_TYPE != 3:
+    try:
+        tree = ET.parse(CONFIG_XML)
+    except:
+        print("Error with the config file: reinstall the program.")
+        sys.exit()
+    else:
+        root = tree.getroot()
 
 # checks if all folders and files are in main directory
 ffdrg = ["DATABASE","DATA","LOG","extractors","languages","Gsearcher_config.py","indexerdb.py","Gsearcher_choose_db.py"]
@@ -537,7 +540,6 @@ class MainWindow(Gtk.Window):
                     _cmd = "xdg-open '{}'".format(model[iter][3].replace("'","'\\''"))
                     subprocess.Popen(_cmd, shell=True)
                 except Exception as E:
-                    # print("System file manager: error.")
                     message1 = str(E)
                     messagedialog1 = Gtk.MessageDialog(parent=self,
                                           modal=True,
@@ -553,7 +555,6 @@ class MainWindow(Gtk.Window):
                     # os.system("{}".format(ccommand))
                     subprocess.Popen(ccomand, shell=True)
                 except Exception as E:
-                    # print("Custom file manager: error.")
                     message1 = str(E)
                     messagedialog1 = Gtk.MessageDialog(parent=self,
                                           modal=True,
@@ -967,7 +968,8 @@ class MainWindow(Gtk.Window):
             
             wlist = stext.strip()
             self._on_search(wlist)
-                
+    
+    # perform a file searching
     def _on_search(self, _item):
         try:
             _dir = self.txt_field_1.get_text()
