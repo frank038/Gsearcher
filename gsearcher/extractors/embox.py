@@ -12,7 +12,7 @@ import importlib
 nameModule = 'embox'
 # mimetype handled
 docType = ['application/mbox','text/plain','text/html']
-# command execute - TRUE meand its an internal procedure
+# command execute - TRUE meand it is an internal procedure
 command_execute = "TRUE"
 # how to identify the file
 fidentify="mbox"
@@ -31,7 +31,10 @@ def nametype_Module():
 # if the attachments are in the following groups, they will be skipped from indexing process
 _skip_family_mimetype = ["image","video"]
 
-# if 1 also the attachments will be indexed, otherwise 0
+# mimetype allowed by groups
+_allowed_family_mimetype = []
+
+# 1 also the attachments will be indexed, otherwise 0
 INDEX_ATTACHMENTS = 1
 
 module_dir = os.getcwd()
@@ -133,7 +136,7 @@ def _mailbox(mbox_file):
     return metadata1,_mtext
 
 
-#if False is returned then no text has been extract
+#if False is returned then no text has been extracted
 def ffile_content(ffile):
     try:
         metadata1,ctext = _mailbox(ffile)
