@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-Number_version = "1.0.9"
+Number_version = "1.1"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -416,7 +416,8 @@ class MainWindow(Gtk.Window):
         treeviewcolumn.add_attribute(cellrenderertext, "text", 3)
         #
         self.selection1 = self.treeview1.get_selection()
-        self.treeview1.set_activate_on_single_click(True)
+        if SEARCH_TYPE != 3:
+            self.treeview1.set_activate_on_single_click(True)
         self.treeview1.connect("row-activated", self.on_liststore_changed)
         # notebook in grid at row 3 
         self.notebook = Gtk.Notebook()
@@ -572,8 +573,10 @@ class MainWindow(Gtk.Window):
             model = self.combo_search.get_model()
             combo_box_name = model[tree_iter][0]
             if combo_box_name == l.Search:
+                self.treeview1.set_activate_on_single_click(False)
                 self.bbb()
             else:
+                self.treeview1.set_activate_on_single_click(True)
                 self.aaa()
             self._set_name()
         
@@ -611,6 +614,7 @@ class MainWindow(Gtk.Window):
         btn_1.connect("clicked", self.on_btn_1)
         self.txt_field_1 = Gtk.Entry()
         self.txt_field_1.set_editable(False)
+        self.txt_field_1.set_text(homepath)
         self.box_1.pack_start(btn_1, False, False, 1)
         self.box_1.pack_start(self.txt_field_1, True, True, 2)
         
@@ -896,8 +900,18 @@ class MainWindow(Gtk.Window):
             label.show()
             page.show()
         
-        # elif combo_box_name == l.Search:
-            # pass
+        elif combo_box_name == l.Search:
+            try:
+                subprocess.Popen(["xdg-open", os.path.join(pathfile,namefile)])
+            except Exception as E:
+                message1 = str(E)
+                messagedialog1 = Gtk.MessageDialog(parent=self,
+                                      modal=True,
+                                      message_type=Gtk.MessageType.WARNING,
+                                      buttons=Gtk.ButtonsType.OK,
+                                      text=message1)
+                messagedialog1.connect("response", self.dialog_response1)
+                messagedialog1.show()
 
     # searches the finding words  
     # populate the liststore  
