@@ -29,7 +29,7 @@ Notice="Notice"
 TNotice="    Only the first ten abstracts are shown."
 Help="""What is the meaning of And/Or:
 And means that each document contains all the words you are searching for.
-Or means that each document contains al least one of the words you are searching for.
+Or means that each document contains al least one of the words you are searching for.\n
 Metadata means that each document contains al least one of the words you are searching for in the metadata or tag1 section.\n
 The symbol * can be added at the beginning and at the end
 of each searched word to complete it.\n

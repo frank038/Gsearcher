@@ -29,7 +29,7 @@ Notice="Avviso"
 TNotice="    Solo i primi dieci estratti sono stati visualizzati."
 Help="""Significato di Tutti/Singolo:
 Tutti significa che verranno cercati solo i documenti che contengono tutte le parole indicate.
-Singolo significa che verranno cercati tutti i documenti che contengono almeno una parola tra quelle indicate.
+Singolo significa che verranno cercati tutti i documenti che contengono almeno una parola tra quelle indicate.\n
 Metadata significa che verranno cercati tutti i documenti che contengono almeno una parola tra quelle indicate tra i metadata o in tag1.\n
 Il simbolo * completa le parole cercate, e può essere posto all'inizio e
 alla fine di ciascuna parola.\n
