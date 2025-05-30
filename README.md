@@ -2,6 +2,11 @@ Gsearcher
 
 Free to use and modify.
 
+Requirements:
+- python3
+- gtk3 binding
+- xdg-open (to open the files searched by double clicking on it)
+
 This is a program for searching text in files. It is also a simple frontend to the console program find for searching files by name or by modification time or by access time.
 It is written in Python3 and Gtk3 libraries. Python3-magic and optionally exiftool for metadata 
 are needed.
