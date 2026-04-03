@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-Number_version = "1.1"
+Number_version = "1.2"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -488,8 +488,11 @@ class MainWindow(Gtk.Window):
     
     def dialog_responsee(self, messagedialoge, response_id):
         if response_id == Gtk.ResponseType.OK:
-            cur.execute("""delete from tabella""")
-            con.commit()
+            try:
+                cur.execute("""delete from tabella""")
+                con.commit()
+            except:
+                pass
             messagedialoge.destroy()
         elif response_id == Gtk.ResponseType.CANCEL:
             messagedialoge.destroy()

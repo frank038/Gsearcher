@@ -76,7 +76,8 @@ class MainWindow(Gtk.Window):
 
     def __init__(self):
         Gtk.Window.__init__(self, title="Gsearcher Chooser")
-        self.set_icon_from_file("DATA/icons/gsearcher.svg")
+        # self.set_icon_from_file("DATA/icons/gsearcher.svg")
+        self.set_icon_from_file("DATA/icons/gsearcher.png")
         self.connect("delete-event", Gtk.main_quit)
         self.set_border_width(5)
         self.set_default_size(1024, 800)
@@ -173,7 +174,9 @@ class MainWindow(Gtk.Window):
     
     # detete the database - delete the database from liststore
     def on_delete2(self):
-
+        _selected_items = self.iconview.get_selected_items()
+        if _selected_items == []:
+            return
         iter = self.liststore.get_iter(self.iconview.get_selected_items()[0])
         self.liststore.remove(iter)
         
